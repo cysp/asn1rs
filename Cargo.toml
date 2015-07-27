@@ -1,0 +1,4 @@
+[package]
+name = "asn1"
+version = "0.1.0"
+authors = ["Scott Talbot <s@chikachow.org>"]
