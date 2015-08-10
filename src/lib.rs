@@ -1,8 +1,10 @@
 pub mod identifier;
 pub mod reading;
 pub mod writing;
+pub mod object_identifier;
 
 pub use identifier::Identifier;
+pub use object_identifier::ObjectIdentifier;
 
 pub use reading::Asn1Reader;
 
