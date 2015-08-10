@@ -1,5 +1,8 @@
 // #![allow(dead_code)]
 
+use std;
+
+
 #[derive(Copy,Clone,Debug,PartialEq,Eq)]
 pub enum Class {
     Universal, // 0b00
@@ -9,7 +12,7 @@ pub enum Class {
 }
 
 impl Class {
-    fn from_u8(v: u8) -> Self {
+    pub fn from_u8(v: u8) -> Self {
         match (v >> 6) & 0b11 {
             0b00 => Class::Universal,
             0b01 => Class::Application,
@@ -30,9 +33,15 @@ impl Class {
     }
 }
 
+impl From<Class> for u8 {
+    fn from(v: Class) -> u8 {
+        v.into_u8()
+    }
+}
+
 
 #[derive(Copy,Clone,Debug,PartialEq,Eq)]
-pub enum Tag {
+pub enum UniversalTag {
     EndOfContent, // 0b00000
     Boolean, // 0b00001
     Integer, // 0b00010
@@ -64,121 +73,219 @@ pub enum Tag {
     UniversalString, // 0b11100
     CharacterString, // 0b11101
     BmpString, // 0b11110
-    UseLongForm, // 0b11111
+    // UseLongForm, // 0b11111
 }
 
-impl Tag {
-    fn into_u8(self) -> u8 {
+impl UniversalTag {
+    pub fn into_u8(self) -> u8 {
         match self {
-            Tag::EndOfContent => 0b00000,
-            Tag::Boolean => 0b00001,
-            Tag::Integer => 0b00010,
-            Tag::BitString => 0b00011,
-            Tag::OctetString => 0b00100,
-            Tag::Null => 0b00101,
-            Tag::ObjectIdentifier => 0b00110,
-            Tag::ObjectDescriptor => 0b00111,
-            Tag::External => 0b01000,
-            Tag::Real => 0b01001,
-            Tag::Enumerated => 0b01010,
-            Tag::EmbeddedPov => 0b01011,
-            Tag::Utf8String => 0b01100,
-            Tag::RelativeOid => 0b01101,
+            UniversalTag::EndOfContent => 0b00000,
+            UniversalTag::Boolean => 0b00001,
+            UniversalTag::Integer => 0b00010,
+            UniversalTag::BitString => 0b00011,
+            UniversalTag::OctetString => 0b00100,
+            UniversalTag::Null => 0b00101,
+            UniversalTag::ObjectIdentifier => 0b00110,
+            UniversalTag::ObjectDescriptor => 0b00111,
+            UniversalTag::External => 0b01000,
+            UniversalTag::Real => 0b01001,
+            UniversalTag::Enumerated => 0b01010,
+            UniversalTag::EmbeddedPov => 0b01011,
+            UniversalTag::Utf8String => 0b01100,
+            UniversalTag::RelativeOid => 0b01101,
             // 0b01110 reserved
             // 0b01111 reserved
-            Tag::Sequence => 0b10000,
-            Tag::Set => 0b10001,
-            Tag::NumericString => 0b10010,
-            Tag::PrintableString => 0b10011,
-            Tag::T61String => 0b10100,
-            Tag::VideotexString => 0b10101,
-            Tag::Ia5String => 0b10110,
-            Tag::UtcTime => 0b10111,
-            Tag::GeneralizedTime => 0b11000,
-            Tag::GraphicString => 0b11001,
-            Tag::VisibleString => 0b11010,
-            Tag::GeneralString => 0b11011,
-            Tag::UniversalString => 0b11100,
-            Tag::CharacterString => 0b11101,
-            Tag::BmpString => 0b11110,
-            Tag::UseLongForm => 0b11111,
+            UniversalTag::Sequence => 0b10000,
+            UniversalTag::Set => 0b10001,
+            UniversalTag::NumericString => 0b10010,
+            UniversalTag::PrintableString => 0b10011,
+            UniversalTag::T61String => 0b10100,
+            UniversalTag::VideotexString => 0b10101,
+            UniversalTag::Ia5String => 0b10110,
+            UniversalTag::UtcTime => 0b10111,
+            UniversalTag::GeneralizedTime => 0b11000,
+            UniversalTag::GraphicString => 0b11001,
+            UniversalTag::VisibleString => 0b11010,
+            UniversalTag::GeneralString => 0b11011,
+            UniversalTag::UniversalString => 0b11100,
+            UniversalTag::CharacterString => 0b11101,
+            UniversalTag::BmpString => 0b11110,
         }
     }
 
-    fn from_u8(v: u8) -> Option<Self> {
+    pub fn from_u64(v: u64) -> Option<Self> {
         Some(match v & 0b11111 {
-            0b00000 => Tag::EndOfContent,
-            0b00001 => Tag::Boolean,
-            0b00010 => Tag::Integer,
-            0b00011 => Tag::BitString,
-            0b00100 => Tag::OctetString,
-            0b00101 => Tag::Null,
-            0b00110 => Tag::ObjectIdentifier,
-            0b00111 => Tag::ObjectDescriptor,
-            0b01000 => Tag::External,
-            0b01001 => Tag::Real,
-            0b01010 => Tag::Enumerated,
-            0b01011 => Tag::EmbeddedPov,
-            0b01100 => Tag::Utf8String,
-            0b01101 => Tag::RelativeOid,
+            0b00000 => UniversalTag::EndOfContent,
+            0b00001 => UniversalTag::Boolean,
+            0b00010 => UniversalTag::Integer,
+            0b00011 => UniversalTag::BitString,
+            0b00100 => UniversalTag::OctetString,
+            0b00101 => UniversalTag::Null,
+            0b00110 => UniversalTag::ObjectIdentifier,
+            0b00111 => UniversalTag::ObjectDescriptor,
+            0b01000 => UniversalTag::External,
+            0b01001 => UniversalTag::Real,
+            0b01010 => UniversalTag::Enumerated,
+            0b01011 => UniversalTag::EmbeddedPov,
+            0b01100 => UniversalTag::Utf8String,
+            0b01101 => UniversalTag::RelativeOid,
             0b01110 => return None,
             0b01111 => return None,
-            0b10000 => Tag::Sequence,
-            0b10001 => Tag::Set,
-            0b10010 => Tag::NumericString,
-            0b10011 => Tag::PrintableString,
-            0b10100 => Tag::T61String,
-            0b10101 => Tag::VideotexString,
-            0b10110 => Tag::Ia5String,
-            0b10111 => Tag::UtcTime,
-            0b11000 => Tag::GeneralizedTime,
-            0b11001 => Tag::GraphicString,
-            0b11010 => Tag::VisibleString,
-            0b11011 => Tag::GeneralString,
-            0b11100 => Tag::UniversalString,
-            0b11101 => Tag::CharacterString,
-            0b11110 => Tag::BmpString,
-            0b11111 => Tag::UseLongForm,
+            0b10000 => UniversalTag::Sequence,
+            0b10001 => UniversalTag::Set,
+            0b10010 => UniversalTag::NumericString,
+            0b10011 => UniversalTag::PrintableString,
+            0b10100 => UniversalTag::T61String,
+            0b10101 => UniversalTag::VideotexString,
+            0b10110 => UniversalTag::Ia5String,
+            0b10111 => UniversalTag::UtcTime,
+            0b11000 => UniversalTag::GeneralizedTime,
+            0b11001 => UniversalTag::GraphicString,
+            0b11010 => UniversalTag::VisibleString,
+            0b11011 => UniversalTag::GeneralString,
+            0b11100 => UniversalTag::UniversalString,
+            0b11101 => UniversalTag::CharacterString,
+            0b11110 => UniversalTag::BmpString,
+            0b11111 => return None, // use-long-form
             _ => unreachable!(),
         })
     }
 }
 
-
-#[derive(Copy,Clone,Debug,PartialEq,Eq)]
-pub struct Identifier (Class, bool, Tag);
-
-impl From<u8> for Identifier {
-    fn from(v: u8) -> Self {
-        let class = Class::from_u8(v & 0xc0);
-        let constructed = (v & 0x20) != 0;
-        let tag = Tag::from_u8(v & 0x1f);
-
-        Identifier(class, constructed, tag.unwrap())
+impl From<UniversalTag> for u8 {
+    fn from(tag: UniversalTag) -> u8 {
+        match tag {
+            UniversalTag::EndOfContent => 0b00000,
+            UniversalTag::Boolean => 0b00001,
+            UniversalTag::Integer => 0b00010,
+            UniversalTag::BitString => 0b00011,
+            UniversalTag::OctetString => 0b00100,
+            UniversalTag::Null => 0b00101,
+            UniversalTag::ObjectIdentifier => 0b00110,
+            UniversalTag::ObjectDescriptor => 0b00111,
+            UniversalTag::External => 0b01000,
+            UniversalTag::Real => 0b01001,
+            UniversalTag::Enumerated => 0b01010,
+            UniversalTag::EmbeddedPov => 0b01011,
+            UniversalTag::Utf8String => 0b01100,
+            UniversalTag::RelativeOid => 0b01101,
+            // 0b01110 reserved
+            // 0b01111 reserved
+            UniversalTag::Sequence => 0b10000,
+            UniversalTag::Set => 0b10001,
+            UniversalTag::NumericString => 0b10010,
+            UniversalTag::PrintableString => 0b10011,
+            UniversalTag::T61String => 0b10100,
+            UniversalTag::VideotexString => 0b10101,
+            UniversalTag::Ia5String => 0b10110,
+            UniversalTag::UtcTime => 0b10111,
+            UniversalTag::GeneralizedTime => 0b11000,
+            UniversalTag::GraphicString => 0b11001,
+            UniversalTag::VisibleString => 0b11010,
+            UniversalTag::GeneralString => 0b11011,
+            UniversalTag::UniversalString => 0b11100,
+            UniversalTag::CharacterString => 0b11101,
+            UniversalTag::BmpString => 0b11110,
+        }
+    }
+}
+impl From<UniversalTag> for u32 {
+    fn from(tag: UniversalTag) -> u32 {
+        u8::from(tag) as Self
+    }
+}
+impl From<UniversalTag> for u64 {
+    fn from(tag: UniversalTag) -> u64 {
+        u8::from(tag) as Self
     }
 }
 
-impl From<Identifier> for u8 {
-    fn from(v: Identifier) -> Self {
-        let class = v.0.into_u8();
-        let constructed = if v.1 { 0x20 } else { 0 };
-        let tag = v.2.into_u8();
-        class | constructed | tag
-    }
-}
+
+#[derive(Copy,Clone,PartialEq,Eq)]
+pub struct Identifier (Class, bool, u64);
 
 impl Identifier {
+    pub fn new(klass: Class, constructed: bool, tag: u64) -> Self {
+        Identifier(klass, constructed, tag)
+    }
+
     pub fn from_u8(v: u8) -> Option<Self> {
         let class = Class::from_u8(v & 0xc0);
         let constructed = (v & 0x20) != 0;
-        let tag = Tag::from_u8(v & 0x1f);
 
-        let tag = match tag {
-            Some(tag) => tag,
-            None => return None,
+        let tag = match v & 0x1f {
+            0x1f => return None,
+            tag => tag,
         };
 
-        Some(Identifier(class, constructed, tag))
+        Some(Identifier(class, constructed, tag as u64))
+    }
+
+    #[inline]
+    pub fn class(&self) -> Class {
+        self.0
+    }
+
+    #[inline]
+    pub fn is_constructed(&self) -> bool {
+        self.1
+    }
+
+    #[inline]
+    pub fn tag(&self) -> u64 {
+        self.2
+    }
+
+    #[inline]
+    pub fn bytes_len(&self) -> usize {
+        let tag = self.tag();
+        if tag < 31 {
+            return 1;
+        }
+        let mut tag = tag;
+        let mut len = 1;
+        loop {
+            if tag == 0 {
+                break;
+            }
+            len += 1;
+            tag = tag / 127;
+        }
+        len
+    }
+
+    #[inline]
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let bytes_len = self.bytes_len();
+        let mut v = Vec::with_capacity(bytes_len);
+        self.write_to(&mut v).unwrap();
+        v
+    }
+
+    pub fn write_to<W: std::io::Write>(&self, w: &mut W) -> std::io::Result<usize> {
+        let tag = self.tag();
+        if tag < 31 {
+            let class = self.0.into_u8();
+            let constructed = if self.1 { 0x20 } else { 0 };
+            let b: u8 = class | constructed | (tag as u8);
+            return w.write(&[b]);
+        }
+        unimplemented!()
+    }
+}
+
+impl std::fmt::Debug for Identifier {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let constructed = if self.1 { "constructed" } else { "primitive" };
+        match self.0 {
+            Class::Universal => {
+                match UniversalTag::from_u64(self.2) {
+                    Some(tag) => write!(f, "Identifier(Universal, {}, {:?})", constructed, tag),
+                    None => write!(f, "Identifier(Universal, {}, {})", constructed, self.2),
+                }
+            }
+            _ => write!(f, "Identifier({:?}, {}, {})", self.0, constructed, self.2),
+        }
     }
 }
 
@@ -189,14 +296,15 @@ mod test {
 
     #[test]
     fn smoke_roundtrip() {
-        for v in (0..255) {
+        for v in 0..254 {
             match v & 0b11111 {
                 0b01110 => continue,
                 0b01111 => continue,
+                0b11111 => continue,
                 _ => (),
             }
-            let i: Identifier = v.into();
-            assert_eq!(v, i.into());
+            let i = Identifier::from_u8(v).unwrap();
+            assert_eq!(i.to_bytes(), &[v]);
         }
     }
 }
